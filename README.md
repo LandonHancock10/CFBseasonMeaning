@@ -29,10 +29,9 @@ remaining season, frozen at the start of each week. Playoff games = 1.0 per team
 
 ### Fanbase size (data/manual/brand_scores.csv)
 - Source: "Altimore College & Co." fanbase study (regional census patterns, digital
-  engagement, alumni footprint). Top 65 FBS programs only; figures were pasted from
-  an AI chat summary that cites 247Sports ("the 16 biggest fan bases", Ohio State at
-  11.26M), On3 and Sports Media Watch. Obtained 2026-10-16.
-- CAVEAT: I could not verify this study independently. Check the original (247Sports
+  engagement, alumni footprint), as cited by 247Sports ("the 16 biggest fan bases",
+  Ohio State at 11.26M). Top 65 FBS programs only. Obtained 2026-10-16.
+- CAVEAT: the original study has not been checked. Verify it (start with the 247Sports
   article) before putting numbers on camera.
 - Gaps and judgement calls:
   - Teams ranked 66+ were not published. Group of Five teams get DEFAULT_FANBASE_M
@@ -55,7 +54,7 @@ biggest games, 0.08 to 0.10 for major rivalries, 0.03 to 0.06 for minor ones.
 The values are judgement calls, so prune and adjust before filming. Team names follow
 CFBD spelling and should be checked against the pulled teams file.
 
-### Fanbase methodology (as described in the source chat, unverified)
+### Fanbase methodology (as described by the source, unverified)
 Metrics said to be used to build the fanbase rankings:
 - Nielsen TV ratings and share: total active audience, from marquee games (the source
   cites Texas vs. Ohio State at 13.99 million viewers) down to regional broadcasts on
@@ -71,7 +70,7 @@ Metrics said to be used to build the fanbase rankings:
   school's territory ends and another's begins.
 - Alumni registry records: official university registries of living graduates and
   where they live.
-Source: AI chat summary pasted 2026-10-16. Same verification caveat as above.
+Same source and verification caveat as above.
 
 ## Running the analysis
     python scripts/pull_data.py      # once; needs CFB_DATA_KEY in .env

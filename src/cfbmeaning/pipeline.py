@@ -248,13 +248,14 @@ def combine(gm: pd.DataFrame):
     return gm
 
 
-def sim_bracket(seeds, fmt, elo, w_team, n_sims, seed=7):
+def sim_bracket(seeds, fmt, elo, w_team, n_sims, seed=7, power=None, any_power=False):
     """Expected playoff meaning (flat PLAYOFF_GAME_MEANING per team x audience weight)."""
     rng = np.random.default_rng(seed)
     S = n_sims
     total = np.zeros(S)
     score = np.zeros(S)
     per_game = []
+    pcount = np.zeros(S)  # games with both (or, if any_power, at least one) team in `power` (bool array over teams)
     games = 0
     s = [np.full(S, i) for i in seeds]
 
@@ -264,6 +265,8 @@ def sim_bracket(seeds, fmt, elo, w_team, n_sims, seed=7):
         m = C.PLAYOFF_GAME_MEANING * (w_team[a] + w_team[b])
         total[:] += m
         per_game.append(m)
+        if power is not None:
+            pcount[:] += (power[a] | power[b]) if any_power else (power[a] & power[b])
         score[:] += np.minimum(100.0, 100 * m / C.SCORE_REF)
         p = elo_to_wp(elo[a], elo[b], home_field=0)
         return np.where(rng.random(S) < p, a, b)
@@ -283,4 +286,5 @@ def sim_bracket(seeds, fmt, elo, w_team, n_sims, seed=7):
     sf1, sf2 = play(q1, q4), play(q2, q3)
     play(sf1, sf2)
     sim_bracket.last_games = np.concatenate(per_game)  # every simulated playoff game's meaning
+    sim_bracket.power_games = pcount.mean()
     return total.mean(), games, score.mean()
