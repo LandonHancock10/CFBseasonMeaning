@@ -205,7 +205,8 @@ def run(season=C.SEASON, n_sims=C.N_SIMS, resume_weight=0.5, verbose=True):
     seeds24 = sorted(np.where(sel[2][0, :n])[0], key=lambda i: -sc24[i])
     champs24 = [teams[i] for i in np.where(w24[1][0, :n])[0]]
     return dict(games=gm, teams=teams, w_team=w_team, seeds12=seeds12, seeds24=seeds24,
-                elo=elo_now(reg, teams, 99), post=d["post"], tidx=tidx, champs24=champs24)
+                elo=elo_now(reg, teams, 99), post=d["post"], tidx=tidx, champs24=champs24,
+                rating=rating, wins12=w12[0][0, :n], wins24=w24[0][0, :n], resume_weight=resume_weight)
 
 
 def _row(r, outcome, sel, champ12, champ24, riv, w_team, lev):
@@ -220,6 +221,11 @@ def _row(r, outcome, sel, champ12, champ24, riv, w_team, lev):
             for k in keys:
                 rec[f"{k}_{side}"] = 0.0
             continue
+        # playoff odds if this team wins / loses the game (useful for sanity checks)
+        for k, ind in (("cfp12", f12), ("cfp24", f24)):
+            nw = int(won.sum())
+            rec[f"{k}_pwin_{side}"] = ind[won, idx].mean() if nw else np.nan
+            rec[f"{k}_ploss_{side}"] = ind[~won, idx].mean() if nw < len(won) else np.nan
         rec[f"cfp12_{side}"] = lev(f12[:, idx], won)
         rec[f"conf12_{side}"] = lev(champ12[:, idx], won)
         rec[f"bye12_{side}"] = lev(b12[:, idx], won)
