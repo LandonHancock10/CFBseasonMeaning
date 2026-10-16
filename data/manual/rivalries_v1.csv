@@ -1,0 +1,73 @@
+team_a,team_b,boost,name
+Ohio State,Michigan,0.15,The Game
+Alabama,Auburn,0.15,Iron Bowl
+Texas,Oklahoma,0.15,Red River Rivalry
+Georgia,Florida,0.12,Cocktail Party
+Georgia,Georgia Tech,0.08,Clean Old-Fashioned Hate
+Alabama,Tennessee,0.12,Third Saturday in October
+Alabama,LSU,0.10,
+Auburn,Georgia,0.10,Deep South's Oldest Rivalry
+Florida,Florida State,0.12,
+Florida State,Miami,0.12,
+Miami,Florida,0.08,
+Clemson,South Carolina,0.10,Palmetto Bowl
+Clemson,Florida State,0.06,
+Notre Dame,USC,0.12,
+Notre Dame,Michigan,0.08,
+Notre Dame,Navy,0.05,
+Notre Dame,Michigan State,0.05,
+Texas,Texas A&M,0.12,Lone Star Showdown
+Texas,Arkansas,0.06,
+Oklahoma,Oklahoma State,0.10,Bedlam
+Oklahoma,Nebraska,0.05,
+Oregon,Washington,0.10,
+Oregon,Oregon State,0.08,Civil War
+Washington,Washington State,0.08,Apple Cup
+USC,UCLA,0.10,
+Stanford,California,0.08,The Big Game
+Stanford,Notre Dame,0.05,
+Michigan,Michigan State,0.10,Paul Bunyan Trophy
+Ohio State,Penn State,0.10,
+Ohio State,Wisconsin,0.05,
+Penn State,Michigan,0.06,
+Wisconsin,Minnesota,0.08,Paul Bunyan's Axe
+Iowa,Iowa State,0.10,Cy-Hawk
+Iowa,Nebraska,0.08,
+Iowa,Minnesota,0.06,Floyd of Rosedale
+Illinois,Northwestern,0.05,
+Indiana,Purdue,0.08,Old Oaken Bucket
+Michigan,Minnesota,0.04,
+Nebraska,Colorado,0.05,
+Colorado,Utah,0.06,Rumble in the Rockies
+Utah,BYU,0.10,Holy War
+Arizona,Arizona State,0.10,Territorial Cup
+Kansas,Kansas State,0.08,Sunflower Showdown
+Kansas,Missouri,0.06,Border War
+Missouri,Arkansas,0.06,
+Baylor,TCU,0.06,
+Texas Tech,Texas,0.06,
+West Virginia,Pittsburgh,0.10,Backyard Brawl
+West Virginia,Virginia Tech,0.04,
+Virginia,Virginia Tech,0.08,Commonwealth Clash
+North Carolina,NC State,0.08,
+North Carolina,Duke,0.08,Victory Bell
+Duke,Wake Forest,0.03,
+Louisville,Kentucky,0.10,Governor's Cup
+Georgia Tech,Clemson,0.04,
+Tennessee,Vanderbilt,0.05,
+Tennessee,Florida,0.06,
+Tennessee,Kentucky,0.05,
+Ole Miss,Mississippi State,0.10,Egg Bowl
+LSU,Texas A&M,0.07,
+LSU,Ole Miss,0.06,
+LSU,Arkansas,0.05,
+Texas A&M,Arkansas,0.05,
+Syracuse,Boston College,0.05,Battle for the Gridiron
+Boise State,Fresno State,0.05,
+Army,Navy,0.12,Army-Navy
+Air Force,Army,0.05,
+Air Force,Navy,0.05,
+Cincinnati,Louisville,0.04,
+UCF,South Florida,0.08,War on I-4
+Oklahoma State,Texas Tech,0.03,
+Utah State,BYU,0.03,

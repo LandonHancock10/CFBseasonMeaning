@@ -1,0 +1,12 @@
+[project]
+name = "cfbmeaning"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = ["requests", "pandas", "numpy", "python-dotenv", "matplotlib", "pyarrow"]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
