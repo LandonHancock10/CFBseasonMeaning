@@ -1,5 +1,5 @@
 # Findings: Does a 24-team playoff make the Power-conference season matter more?
-Seasons analyzed: 2021, 2022, 2023, 2024, 2025.
+Seasons analyzed: 2021, 2022, 2023, 2024, 2025, 2026
 
 **Focus:** this write-up centers on the Power conferences (the Power 4 today, and the Power 5 in 2021-2023). G6 programs appear where the 24-team format notably helps or hurts them (section 6). Section 10 covers the 2026 season so far.
 
