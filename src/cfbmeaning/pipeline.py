@@ -4,6 +4,8 @@ Two "worlds" share the same regular-season outcomes each week:
   12-team world: conference championship games are played (champion = title game winner)
   24-team world: no conference championship games (champion = best conference record)
 """
+from types import SimpleNamespace
+
 import numpy as np
 import pandas as pd
 from . import config as C
@@ -23,6 +25,7 @@ def load(Y=C.SEASON):
         lines=pd.read_parquet(R / f"lines_{Y}.parquet"),
         teams=pd.read_parquet(R / f"teams_fbs_{Y}.parquet"),
         sp=pd.read_parquet(R / f"sp_{Y}.parquet"),
+        elo=pd.read_parquet(R / f"elo_{Y}.parquet"),
     )
 
 
@@ -61,12 +64,16 @@ def build_games(d):
     reg["away"] = np.where(reg.awayClassification == "fbs", reg.awayTeam, FCS)
     reg["spread"] = reg["id"].map(avg_spread(d["lines"]))
     hfa = np.where(reg.neutralSite, 0, 55)
-    p_elo = elo_to_wp(reg.homePregameElo.fillna(1500), reg.awayPregameElo.fillna(1500), home_field=hfa)
+    tel = d["elo"].set_index("team")["elo"]  # current-season Elo: fills in games without a pre-game Elo (unplayed games)
+    hpre = reg.homePregameElo.fillna(reg.home.map(tel)).fillna(1500)
+    apre = reg.awayPregameElo.fillna(reg.away.map(tel)).fillna(1500)
+    p_elo = elo_to_wp(hpre, apre, home_field=hfa)
     p = np.where(reg.spread.notna(), spread_to_wp(reg.spread.fillna(0)), p_elo)
     p = np.where(reg.away == FCS, 0.97, np.where(reg.home == FCS, 0.03, p))
     reg["p_home"] = p
     reg["home_won"] = reg.homePoints > reg.awayPoints
-    reg["is_title"] = reg["id"].isin(find_titles(reg, d["teams"]))
+    complete = reg.completed.mean() >= 0.95  # in-progress seasons have no title games scheduled yet
+    reg["is_title"] = reg["id"].isin(find_titles(reg, d["teams"])) if complete else False
     reg["h"] = reg.home.map(tidx)
     reg["a"] = reg.away.map(tidx)
     return teams, tidx, reg.reset_index(drop=True)
@@ -77,8 +84,12 @@ def rivalry_lookup():
     return {frozenset((a, b)): x for a, b, x in zip(r.team_a, r.team_b, r.boost)}
 
 
-def elo_now(reg, teams, w):
-    """Each team's Elo as of the start of week w (pre-game Elo of its next game)."""
+def elo_now(reg, teams, w, elo_tbl=None):
+    """Each team's Elo as of the start of week w (pre-game Elo of its next game).
+    For an in-progress season pass elo_tbl (current Elo by team) and it is used for every week."""
+    if elo_tbl is not None:
+        e = elo_tbl.reindex(teams)
+        return e.fillna(e.mean()).to_numpy(float)
     rows = []
     for side in ("home", "away"):
         rows.append(pd.DataFrame({"team": reg[side].where(reg[side] != FCS), "week": reg.week,
@@ -101,7 +112,7 @@ def run(season=C.SEASON, n_sims=C.N_SIMS, resume_weight=0.5, verbose=True):
     conf = d["teams"].set_index("school").loc[teams, "conference"].to_numpy()
     conf_names = sorted(set(conf))
     conf_id = np.array([conf_names.index(c) for c in conf])
-    p4 = set(P4) | ({"Pac-12"} if (conf == "Pac-12").sum() >= 8 else set())
+    p4 = set(P4) | ({"Pac-12"} if season <= 2023 else set())  # the Pac-12 counted as Power only through 2023
     is_p4 = np.array([c in p4 for c in conf])
     sp = d["sp"].set_index("team")["rating"].reindex(teams)
     z_sp = z(sp.fillna(sp.mean()).to_numpy(float))
@@ -114,6 +125,14 @@ def run(season=C.SEASON, n_sims=C.N_SIMS, resume_weight=0.5, verbose=True):
 
     games = reg[~reg.is_title].reset_index(drop=True)
     titles = {r.homeConference: r for r in reg[reg.is_title].itertuples()}
+    incomplete = reg.completed.mean() < 0.95
+    elo_tbl = d["elo"].set_index("team")["elo"] if incomplete else None
+    if incomplete:
+        # no title games are scheduled yet: assume one per conference with 10+ teams (champion = winner of a
+        # simulated game between the top two); the Pac-12 (8 teams) is decided by record
+        size = d["teams"].conference.value_counts()
+        titles = {c: SimpleNamespace(week=99, h=-1, a=-1, p_home=0.5, home_won=False)
+                  for c in size.index if size[c] >= 10 and c != "FBS Independents"}
     G = len(games)
     Hm = np.zeros((G, T), np.float32)
     Am = np.zeros((G, T), np.float32)
@@ -124,17 +143,18 @@ def run(season=C.SEASON, n_sims=C.N_SIMS, resume_weight=0.5, verbose=True):
     members = {c: np.where(conf == c)[0] for c in titles}
     conf_members = {c: np.where(conf == c)[0] for c in conf_names}
 
-    def state(w, seed):
+    def state(w, seed, now=False):
         rng = np.random.default_rng(seed + w)  # same seed every season is fine
         S = n_sims
         o = rng.random((S, G)) < games.p_home.to_numpy()
-        lock = (games.week < w).to_numpy()
+        done = games.completed.to_numpy(bool)
+        lock = done if now else ((games.week < w).to_numpy() & done)
         o[:, lock] = games.home_won.to_numpy(bool)[lock]
         of = o.astype(np.float32)
         wins = of @ Hm + (1 - of) @ Am
         cwins = (of * cmask.T) @ Hm + ((1 - of) * cmask.T) @ Am
         cpct = cwins / np.maximum(conf_games, 1)
-        elo = elo_now(reg, teams, w)
+        elo = elo_now(reg, teams, w, elo_tbl)
         rating = 0.5 * z(elo) + 0.5 * z_sp
         rows = np.arange(S)
 
@@ -183,7 +203,12 @@ def run(season=C.SEASON, n_sims=C.N_SIMS, resume_weight=0.5, verbose=True):
         return abs(ind[won].mean() - ind[~won].mean())
 
     out = []
-    for w in sorted(reg.week.unique()):
+    weeks = sorted(reg.week.unique())
+    if incomplete:
+        share = games.groupby("week").completed.mean()
+        current_week = int(share[share < 0.5].index.min())
+        weeks = [w for w in weeks if w < current_week]
+    for w in weeks:
         o, tout, rating, w12, w24 = state(w, C.SEED)
         sel = selection(rating, w12, w24)
         wkg = games[games.week == w]
@@ -195,6 +220,23 @@ def run(season=C.SEASON, n_sims=C.N_SIMS, resume_weight=0.5, verbose=True):
         if verbose:
             print(f"week {w}: {len(wkg)} games + {sum(t.week == w for t in titles.values())} title games done")
     gm = pd.DataFrame(out)
+
+    if incomplete:  # snapshot of the season right now: team odds + the scores of the next few weeks of games
+        o, tout, rating, w12, w24 = state(current_week, C.SEED, now=True)
+        f12, b12, f24, b24 = selection(rating, w12, w24)
+        rec = {t: [0, 0] for t in teams}
+        for h, a, hw, dn in zip(games.home, games.away, games.home_won, games.completed):
+            if dn:
+                if h in rec: rec[h][0 if hw else 1] += 1
+                if a in rec: rec[a][1 if hw else 0] += 1
+        snap = pd.DataFrame(dict(team=teams, conf=conf, wins=[rec[t][0] for t in teams], losses=[rec[t][1] for t in teams],
+                                 rating=rating, cfp12=f12[:, :n].mean(0), cfp24=f24[:, :n].mean(0),
+                                 bye12=b12[:, :n].mean(0), bye24=b24[:, :n].mean(0),
+                                 champ12=w12[1][:, :n].mean(0), champ24=w24[1][:, :n].mean(0)))
+        up = games[(~games.completed) & (games.week >= current_week) & (games.week <= current_week + 2)]
+        urows = [_row(r, o[:, i], (f12, b12, f24, b24), w12[1], w24[1], riv, w_team, lev)
+                 for i, r in zip(up.index, up.itertuples())]
+        return dict(games=gm, snapshot=snap, upcoming=pd.DataFrame(urows), current_week=current_week, teams=teams)
 
     # final state (everything locked): fields for sanity check and bracket sims
     o, tout, rating, w12, w24 = state(99, C.SEED)

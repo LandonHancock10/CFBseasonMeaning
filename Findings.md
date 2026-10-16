@@ -1,8 +1,7 @@
 # Findings: Does a 24-team playoff make the Power-conference season matter more?
-Backbone for the video script. Seasons analyzed: 2021, 2022, 2023, 2024, 2025. All numbers come from `output/`. To regenerate:
-`python scripts/run_meaning.py 2021 2022 2023 2024 2025`, then `python scripts/analyze.py`, `python scripts/fan_impact.py` and `python scripts/power_only.py`.
+Seasons analyzed: 2021, 2022, 2023, 2024, 2025.
 
-**Focus:** this write-up centers on the Power conferences (the Power 4 today, and the Power 5 in 2021-2023). G6 programs appear where the 24-team format notably helps or hurts them (section 6).
+**Focus:** this write-up centers on the Power conferences (the Power 4 today, and the Power 5 in 2021-2023). G6 programs appear where the 24-team format notably helps or hurts them (section 6). Section 10 covers the 2026 season so far.
 
 **Ground rules for every 12-team vs 24-team comparison**
 - The 12-team format includes its conference championship games. The 24-team format has none. Title games are never left out of the 12-team numbers.
@@ -298,3 +297,104 @@ These are games with at least one Power team that exist in both formats. The tit
 - Do we want a 12-team vs 24-team bracket visual for 2025 (who gets in under each)?
 - Should the rivalry scale be softened? Right now a rivalry game alone can be worth 40.
 - Do we want a sensitivity table (different weights, with and without the bye term) before publishing?
+
+---
+
+## 10. The 2026 season so far (through week 6; week 7 just starting)
+Data pulled from CFBD on 2026-10-16. The 2026 season is still a 12-team playoff; the 24-team numbers show what the same games would mean under the 2027 format. All 2026 files are in `output/` (`game_meaning_2026_to_date.csv`, `game_meaning_2026_upcoming.csv`, `team_odds_2026_snapshot.csv`).
+
+### How meaningful has 2026 been?
+Weeks 1-6, all games, using the same scale as the rest of this document (the 12-team numbers here have no title games yet, since none have been played):
+
+| | 12-team | 24-team |
+|---|---|---|
+| Average game score | **5.0** | **8.4** |
+| Median game | 0.7 | 3.7 |
+| Games scoring under 5 | 73% | 53% |
+| Games scoring 25+ | 13 | 31 |
+
+For **Power games only** (any game with a Power team, 254 so far): 6.2 in the 12-team format vs 10.7 in the 24-team format, median 1.3 vs 9.0, and 68% vs 39% of games under 5.
+
+**Compared with the first six weeks of 2021-2025** (Power games): the 12-team average has ranged from 6.1 to 7.5 and the 24-team average from 9.2 to 12.9. 2026 (6.2 and 10.7) sits at the low end for the 12-team format and in the middle for the 24-team format. **The early season has been about as low-stakes as 2024, and a 24-team playoff would have roughly doubled the share of games that matter.**
+
+### Notable game scores so far (Power games)
+Biggest games, 12-team to 24-team score (home team listed second):
+
+| Week | Game | 12-team | 24-team |
+|---|---|---|---|
+| 6 | Texas-Oklahoma (Red River) | 61 | 59 |
+| 5 | Ohio State at Iowa | 44 | 35 |
+| 3 | LSU at Ole Miss | 43 | 50 |
+| 6 | Georgia at Alabama | 43 | 41 |
+| 4 | Texas A&M at LSU | 32 | 40 |
+| 2 | Iowa State at Iowa | 30 | 45 |
+
+Games that would have meant far more under a 24-team playoff:
+
+| Week | Game | 12-team | 24-team |
+|---|---|---|---|
+| 6 | USC at Penn State | 4 | **42** |
+| 4 | Wake Forest at Louisville | 12 | 37 |
+| 3 | SMU at Louisville | 23 | 42 |
+| 5 | Penn State at Northwestern | 5 | 30 |
+| 4 | Iowa at Michigan | 11 | 33 |
+| 5 | Florida at Missouri | 4 | 25 |
+| 5 | Pittsburgh at Virginia Tech | 2 | 24 |
+| 6 | Houston at Kansas State | 3 | 23 |
+
+Games that mattered less under 24 teams: Central Michigan at Miami (23 to 10), Ohio State at Texas in week 2 (23 to 14), Ohio State at Iowa (44 to 35). These are the same pattern as in the five full seasons: safe contenders have less to lose.
+
+### Teams basically out of the 12-team race but alive in a 24-team field
+The model's chance of making the playoff from right now (10,000 simulations of the rest of the season; Power teams, ranked by 24-team odds). A "basically out" team has under 5% in the 12-team format.
+
+| Team | Record | Playoff odds, 12-team | Playoff odds, 24-team |
+|---|---|---|---|
+| Houston (Big 12) | 5-1 | 4% | **49%** |
+| Arizona (Big 12) | 5-1 | 3% | **41%** |
+| Nebraska (Big Ten) | 5-1 | 3% | **40%** |
+| Tennessee (SEC) | 5-1 | 3% | **38%** |
+| Wisconsin (Big Ten) | 4-1 | 1% | **31%** |
+| Louisville (ACC) | 3-3 | 0% | 19% |
+| Penn State (Big Ten) | 3-3 | 0% | 13% |
+| Oklahoma (SEC) | 3-2 | 0% | 12% |
+
+**Long shots in the 12-team format that become favorites under 24 teams:** Oregon (3-2, 10% to 72%), LSU (4-2, 9% to 70%), Ole Miss (4-1, 13% to 74%), Wake Forest (5-1, 10% to 71%), UCLA (5-0, 14% to 75%), BYU (5-0, 35% to 88%), Iowa (5-1, 25% to 87%).
+
+**Season-level picture:** 49 of the 68 Power teams (72%) are already under 5% in the 12-team format, compared with 38 (56%) in the 24-team format. Teams that are genuinely alive but uncertain (between 5% and 95%) number 15 in the 12-team format and 22 in the 24-team format.
+
+**Teams that are in good shape either way:** Notre Dame (6-0), Georgia (6-0), Miami (5-0), Indiana (6-0), Texas Tech (5-0), Utah (5-0), Ohio State (5-1) and Alabama (5-1) are all at 85% or higher in the 12-team format.
+
+**How to read these numbers:** a 5-1 team at 3% in the 12-team format looks harsh. It reflects the model's selector, which weights team rating heavily and records lightly (the same weakness described in section 8). Houston, Arizona, Nebraska and Tennessee are 5-1 but rated well below the top teams, so the model treats them as long shots when only 12 spots exist. A real committee might be more generous, or less, with those records. Treat the 24-team odds as "alive", not as predictions.
+
+### Upcoming games (weeks 7-9, Power games)
+Biggest games coming up (home team listed second):
+
+| Week | Game | 12-team | 24-team |
+|---|---|---|---|
+| 7 | Alabama at Tennessee | 57 | 62 |
+| 7 | Ohio State at Indiana | 46 | 44 |
+| 9 | Florida at Georgia | 45 | 46 |
+| 7 | Florida State at Miami | 44 | 43 |
+| 7 | Auburn at Georgia | 39 | 40 |
+| 7 | Utah at Colorado | 37 | 31 |
+
+Games that would gain the most under a 24-team playoff:
+
+| Week | Game | 12-team | 24-team |
+|---|---|---|---|
+| 8 | USC at Wisconsin | 8 | **45** |
+| 7 | Nebraska at Oregon | 11 | 40 |
+| 9 | Northwestern at Oregon | 8 | 36 |
+| 7 | Wisconsin at UCLA | 12 | 38 |
+| 7 | Penn State at Michigan | 16 | 38 |
+| 9 | Wisconsin at Iowa | 19 | 38 |
+| 7 | Virginia at SMU | 6 | 26 |
+
+Games that would lose the most: Notre Dame at BYU (21 to 11), Texas A&M at Alabama (21 to 13), Ole Miss at Texas (36 to 28), Utah at Colorado (37 to 31).
+
+### Caveats specific to 2026
+- **The season is in progress:** the numbers are a snapshot after six weeks. Week 7 has only 10 games played, and those are treated as results.
+- **No title games are scheduled yet:** I assumed one title game per conference with 10 or more teams (Big Ten, SEC, Big 12, ACC, AAC, MAC, Mountain West, Sun Belt, Conference USA); the new Pac-12 (8 teams) is decided by record. The Pac-12 is treated as non-Power in 2026, so it competes for the G6 auto-bid in the 24-team model.
+- **Ratings:** for unplayed games without a betting line, win probability uses each team's current Elo.
+- **The 12-team format has fewer than 12 clear contenders this early,** so the percentage numbers will move a lot over the next few weeks.
+- All the general caveats in section 8 still apply.
