@@ -33,3 +33,8 @@ USE_AUDIENCE_WEIGHTS = False
 # 0-100 game score = 100 * (stake of team A + stake of team B) / SCORE_REF, capped at 100.
 # A playoff game is 1.0 stake per team = 2.0 total = 100 (flat, every playoff game).
 SCORE_REF = 2.0
+
+# Playoff selection score = RATING_WEIGHT * rating (Elo/SP+ z-score) + RESUME_WEIGHT * resume.
+# Resume = sum of win credits (1 + RESUME_OPP * opponent strength) - loss debits (1 - RESUME_OPP * opponent strength).
+RESUME_WEIGHT = 0.5
+RESUME_OPP = 0.25

@@ -105,7 +105,7 @@ def z(x):
     return (x - x.mean()) / x.std()
 
 
-def run(season=C.SEASON, n_sims=C.N_SIMS, resume_weight=0.5, verbose=True):
+def run(season=C.SEASON, n_sims=C.N_SIMS, resume_weight=C.RESUME_WEIGHT, verbose=True):
     d = load(season)
     teams, tidx, reg = build_games(d)
     n, T = len(teams), len(teams) + 1
@@ -158,11 +158,23 @@ def run(season=C.SEASON, n_sims=C.N_SIMS, resume_weight=0.5, verbose=True):
         rating = 0.5 * z(elo) + 0.5 * z_sp
         rows = np.arange(S)
 
+        # Resume: each win is worth more against a strong opponent, each loss costs more against a weak one
+        # (opponent strength = the rating z-score, clipped); FCS win = 0.2, FCS loss = -2.0.
+        s_opp = np.clip(np.append(rating, np.nan), -1.5, 2.5)
+        so_h, so_a = s_opp[games.a.to_numpy()], s_opp[games.h.to_numpy()]  # opponent of the home / away team
+        fcs_h, fcs_a = np.isnan(so_h), np.isnan(so_a)
+        cr_h = np.where(fcs_h, 0.2, 1 + C.RESUME_OPP * np.nan_to_num(so_h)); db_h = np.where(fcs_h, 2.0, 1 - C.RESUME_OPP * np.nan_to_num(so_h))
+        cr_a = np.where(fcs_a, 0.2, 1 + C.RESUME_OPP * np.nan_to_num(so_a)); db_a = np.where(fcs_a, 2.0, 1 - C.RESUME_OPP * np.nan_to_num(so_a))
+        resume = (of @ (Hm * cr_h[:, None].astype(np.float32)) + (1 - of) @ (Am * cr_a[:, None].astype(np.float32))
+                  - of @ (Am * db_a[:, None].astype(np.float32)) - (1 - of) @ (Hm * db_h[:, None].astype(np.float32)))
+
         # 24-team world: no title games, champion = best conference record (random tiebreak)
         wins24 = wins.copy()
+        res24 = resume.copy()
         champ24 = np.zeros((S, T), bool)
         # 12-team world: title games between top two in the standings
         wins12 = wins.copy()
+        res12 = resume.copy()
         champ12 = np.zeros((S, T), bool)
         tout = {}
         for c, m in conf_members.items():
@@ -184,11 +196,14 @@ def run(season=C.SEASON, n_sims=C.N_SIMS, resume_weight=0.5, verbose=True):
             if w > t.week:
                 aw[:] = bool(t.home_won)
             win = np.where(aw, A, B)
+            lose = np.where(aw, B, A)
             wins12[rows, win] += 1
+            res12[rows, win] += 1.0   # title game: +1 for the winner, -1 for the loser
+            res12[rows, lose] -= 1.0
             champ12[rows, win] = True
             if w == t.week:
                 tout[c] = aw
-        return o, tout, rating, (wins12, champ12), (wins24, champ24)
+        return o, tout, rating, (res12, champ12, wins12), (res24, champ24, wins24)
 
     def selection(rating, w12, w24):
         f12, b12 = sel12.select(w12[0][:, :n], rating, w12[1][:, :n])
@@ -248,7 +263,8 @@ def run(season=C.SEASON, n_sims=C.N_SIMS, resume_weight=0.5, verbose=True):
     champs24 = [teams[i] for i in np.where(w24[1][0, :n])[0]]
     return dict(games=gm, teams=teams, w_team=w_team, seeds12=seeds12, seeds24=seeds24,
                 elo=elo_now(reg, teams, 99), post=d["post"], tidx=tidx, champs24=champs24,
-                rating=rating, wins12=w12[0][0, :n], wins24=w24[0][0, :n], resume_weight=resume_weight)
+                rating=rating, wins12=w12[2][0, :n], wins24=w24[2][0, :n], resume12=w12[0][0, :n], resume24=w24[0][0, :n],
+                resume_weight=resume_weight)
 
 
 def _row(r, outcome, sel, champ12, champ24, riv, w_team, lev):
